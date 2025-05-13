@@ -7,23 +7,18 @@ from openai import OpenAI
 from uuid import uuid4
 from dotenv import load_dotenv  
 
-# Логгинг
 logging.basicConfig(level=logging.INFO)
 
-# Загрузка .env файла
-load_dotenv()  # ДОБАВЛЕНО
+load_dotenv()
 
-# Переменные окружения
-BOT_TOKEN = os.getenv("BOT_TOKEN")  # ИЗМЕНЕНО
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  # ИЗМЕНЕНО
+BOT_TOKEN = os.getenv("BOT_TOKEN") 
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  
 
-# Инициализация
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 router = Router()
 
-# Функция исправления текста
 async def correct_text(prompt: str) -> str:
     try:
         response = openai_client.chat.completions.create(
@@ -40,7 +35,6 @@ async def correct_text(prompt: str) -> str:
         logging.error(f"Ошибка OpenAI: {e}")
         return "Произошла ошибка при обработке текста."
 
-# Inline-запрос
 @router.inline_query()
 async def handle_inline_query(inline_query: InlineQuery):
     query = inline_query.query.strip()
@@ -60,7 +54,6 @@ async def handle_inline_query(inline_query: InlineQuery):
 
     await bot.answer_inline_query(inline_query.id, results=[result], cache_time=0)
 
-# Подключение и запуск
 dp.include_router(router)
 
 async def main():
