@@ -43,3 +43,30 @@ A Telegram inline bot that automatically corrects grammar and punctuation using 
 ```bash
 git clone https://github.com/coupdev/Ai-Proofreader-Bot.git
 cd Ai-Proofreader-Bot
+```
+
+### 2. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Set up environment variables
+Create a .env file based on the example:
+
+```bash
+cp .env.example .env
+```
+
+Edit .env and add your credentials:
+
+```bash
+BOT_TOKEN=your_telegram_bot_token
+OPENAI_API_KEY=your_openai_api_key
+```
+
+### 4. Run the bot
+
+```bash
+python bot.py
+```
