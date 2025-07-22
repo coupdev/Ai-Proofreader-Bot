@@ -1,5 +1,7 @@
 # ✍️ Ai-Proofreader-Bot
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
 A Telegram inline bot that automatically corrects grammar and punctuation using OpenAI's GPT API (GPT-3.5-turbo). Just type your text in any chat using the bot inline — it returns a corrected version instantly.
 
 > **Example:**  
