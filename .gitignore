@@ -1,0 +1,32 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.venv/
+
+# Environment files
+.env
+.env.*
+
+# Logs
+*.log
+bot.log
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# VSCode settings
+.vscode/
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+
+# Readme
+README.md
