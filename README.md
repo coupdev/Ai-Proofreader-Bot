@@ -2,6 +2,8 @@
 
 # ✍️ Ai-Proofreader-Bot
 
+</div>
+
 <div align="center">
 <p>
 <a href="https://coupdev.com/"><img src="https://img.shields.io/badge/Author-Coupdev-89b4fa?style=for-the-badge&logo=github&logoColor=white&labelColor=302D41" alt="Author"></a>&nbsp;&nbsp;
