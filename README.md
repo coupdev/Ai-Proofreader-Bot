@@ -8,19 +8,19 @@
 <a href="https://github.com/coupdev/Ai-Proofreader-Bot/blob/main/LICENSE">
   <img src="https://img.shields.io/github/license/coupdev/Ai-Proofreader-Bot?style=for-the-badge&logo=opensourceinitiative&color=CBA6F7&logoColor=CBA6F7&labelColor=302D41" alt="License">
 </a>&nbsp;&nbsp;
-<img src="https://img.shields.io/badge/Python-3.10+-blue?style=for-the-badge&logo=python&logoColor=yellow&labelColor=302D41" alt="Python">
-&nbsp;&nbsp;
-<img src="https://img.shields.io/badge/Aiogram-3-4DABF7?style=for-the-badge&logo=telegram&logoColor=white&labelColor=302D41" alt="Aiogram">
-&nbsp;&nbsp;
-<img src="https://img.shields.io/badge/Author-Coupdev-89b4fa?style=for-the-badge&logo=github&logoColor=white&labelColor=302D41" alt="Author">
+<a href="https://github.com/coupdev/Ai-Proofreader-Bot/">
+  <img src="https://img.shields.io/badge/Python-3.10+-blue?style=for-the-badge&logo=python&logoColor=yellow&labelColor=302D41" alt="Python">
+</a>&nbsp;&nbsp;
+<a href="https://github.com/coupdev/Ai-Proofreader-Bot/">
+  <img src="https://img.shields.io/badge/Aiogram-3-4DABF7?style=for-the-badge&logo=telegram&logoColor=white&labelColor=302D41" alt="Aiogram">
+</a>&nbsp;&nbsp;
+<a href="https://github.com/coupdev/Ai-Proofreader-Bot/">
+  <img src="https://img.shields.io/badge/Author-Coupdev-89b4fa?style=for-the-badge&logo=github&logoColor=white&labelColor=302D41" alt="Author">
+</a>
 </p>
 </div>
 
 A Telegram bot that corrects text, translates, and calculates. Works in private chat and inline. Powered by OpenRouter
-
-> **Example:**  
-> `@YourBotUsername I has went to school`  
-> ➜ `I went to school.` ✅
 
 ---
 
