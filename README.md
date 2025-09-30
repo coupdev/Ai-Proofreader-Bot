@@ -14,8 +14,6 @@
 <a href="https://github.com/coupdev/Ai-Proofreader-Bot/">
   <img src="https://img.shields.io/badge/Aiogram-3-4DABF7?style=for-the-badge&logo=telegram&logoColor=white&labelColor=302D41" alt="Aiogram">
 </a>&nbsp;&nbsp;
-<a href="https://github.com/coupdev/Ai-Proofreader-Bot/">
-  <img src="https://img.shields.io/github/repo-size/coupdev/Ai-Proofreader-Bot?style=for-the-badge&logo=database&logoColor=f9e2af&label=Size&labelColor=302D41&color=f9e2af" alt="Repo Size">
 </a>
 </p>
 </div>
