@@ -1,3 +1,4 @@
+# Импорты / Imports
 import asyncio
 import logging
 import os
@@ -9,10 +10,10 @@ from aiogram.filters import Command
 from aiogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessageContent
 from dotenv import load_dotenv
 
-# Load environment variables
+# Загрузка переменных окружения / Load environment variables
 load_dotenv()
 
-# Configure logging
+# Настройка логирования / Logging configuration
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(
     level=getattr(logging, log_level),
@@ -24,22 +25,21 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Initialize bot and dispatcher
+# Инициализация бота и диспетчера / Initialize bot and dispatcher
 bot = Bot(token=os.getenv("BOT_TOKEN"))
 dp = Dispatcher()
 
-# OpenRouter API configuration
-# Prefer OPENROUTER_API_KEY, but support legacy OPENROUTE_API_KEY
+# Конфигурация OpenRouter / OpenRouter configuration
+# Предпочитать OPENROUTER_API_KEY, поддерживать устаревший OPENROUTE_API_KEY / Prefer OPENROUTER_API_KEY, support legacy OPENROUTE_API_KEY
 OPENROUTE_API_KEY = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENROUTE_API_KEY")
 OPENROUTE_URL = "https://openrouter.ai/api/v1/chat/completions"
-# Configurable model ID (no fallback)
-# Default: Grok 4 fast (free)
-PRIMARY_MODEL_ID = os.getenv("MODEL_ID", "x-ai/grok-4-fast:free")
+# Идентификатор модели / Model identifier 
+PRIMARY_MODEL_ID = os.getenv("MODEL_ID", "deepseek/deepseek-chat-v3.1:free")
 
 
 async def correct_text(text: str) -> Optional[str]:
     """
-    Correct grammar and punctuation using OpenRoute API
+    Исправление грамматики и пунктуации через OpenRouter API / Correct grammar and punctuation using OpenRouter API
     """
     try:
         headers = {
@@ -49,6 +49,7 @@ async def correct_text(text: str) -> Optional[str]:
             "X-Title": "AI Proofreader Bot"
         }
         
+        # Системный промпт для коррекции / System prompt for correction
         system_prompt = """You are an expert multi-language grammar, slang, and profanity correction assistant.  
 Your task is to return the corrected version of the input text while fully respecting its style and vocabulary.  
 
@@ -90,6 +91,7 @@ Examples:
             "top_p": 0.9
         }
         
+        # Вызов OpenRouter Chat Completions / Call OpenRouter Chat Completions
         async with aiohttp.ClientSession() as session:
             async with session.post(OPENROUTE_URL, headers=headers, json=payload) as response:
                 if response.status == 200:
@@ -100,7 +102,8 @@ Examples:
                 else:
                     error_text = await response.text()
                     logger.error(f"OpenRoute API error: {response.status} - {error_text}")
-                    # Retry once on 429 rate limit
+                    # 404: эндпоинт недоступен для текущей модели / 404: no endpoints for current model
+                    # Повтор при 429 (лимит) один раз / Retry once on 429 rate limit
                     if response.status == 429:
                         try:
                             await asyncio.sleep(0.6)
@@ -112,7 +115,7 @@ Examples:
                                     return corrected_retry
                         except Exception as _:
                             pass
-                    # No fallback; surface error
+                    # Без фолбэка: вернуть None / No fallback; surface error
                     return None
     
     except Exception as e:
@@ -121,10 +124,57 @@ Examples:
 
 async def translate_text(text: str, target_language: Optional[str]) -> Optional[str]:
     """
-    Translate text using OpenRoute API (defaults to English when target_language is None)
-    Returns only the translated text, no extra commentary.
+    Перевод текста через OpenRouter API (по умолчанию на английский при None) / Translate text via OpenRouter API (defaults to English when None)
+    Возвращает только перевод без комментариев / Returns only translated text, no commentary
     """
     try:
+        def normalize_language_name(raw: Optional[str]) -> str:
+            """
+            Map common ISO codes and aliases to canonical English language names.
+            Defaults to "English" when input is None/empty/unknown.
+            """
+            if not raw:
+                return "English"
+            alias = raw.strip().lower()
+            mapping = {
+                # English
+                "en": "English", "eng": "English", "english": "English",
+                # Russian
+                "ru": "Russian", "rus": "Russian", "russian": "Russian", "рус": "Russian", "русский": "Russian",
+                # Ukrainian
+                "uk": "Ukrainian", "ua": "Ukrainian", "ukrainian": "Ukrainian", "украинский": "Ukrainian",
+                # German
+                "de": "German", "ger": "German", "deu": "German", "german": "German", "нем": "German", "немецкий": "German",
+                # French
+                "fr": "French", "fra": "French", "fre": "French", "french": "French", "французский": "French",
+                # Spanish
+                "es": "Spanish", "spa": "Spanish", "spanish": "Spanish", "испанский": "Spanish",
+                # Italian
+                "it": "Italian", "ita": "Italian", "italian": "Italian", "итальянский": "Italian",
+                # Portuguese
+                "pt": "Portuguese", "por": "Portuguese", "portuguese": "Portuguese", "португальский": "Portuguese",
+                # Chinese
+                "zh": "Chinese", "cmn": "Chinese", "chinese": "Chinese", "中文": "Chinese", "китайский": "Chinese",
+                # Japanese
+                "ja": "Japanese", "jpn": "Japanese", "japanese": "Japanese", "японский": "Japanese",
+                # Korean
+                "ko": "Korean", "kor": "Korean", "korean": "Korean", "корейский": "Korean",
+                # Turkish
+                "tr": "Turkish", "tur": "Turkish", "turkish": "Turkish", "турецкий": "Turkish",
+                # Arabic
+                "ar": "Arabic", "ara": "Arabic", "arabic": "Arabic", "арабский": "Arabic",
+                # Polish
+                "pl": "Polish", "pol": "Polish", "polish": "Polish", "польский": "Polish",
+            }
+            return mapping.get(alias, raw.strip().title())
+
+        def _strip_quotes(s: str) -> str:
+            if not s:
+                return s
+            t = s.strip()
+            if (t.startswith('"') and t.endswith('"')) or (t.startswith("'") and t.endswith("'")):
+                return t[1:-1].strip()
+            return t
         headers = {
             "Authorization": f"Bearer {OPENROUTE_API_KEY}",
             "Content-Type": "application/json",
@@ -132,7 +182,7 @@ async def translate_text(text: str, target_language: Optional[str]) -> Optional[
             "X-Title": "AI Proofreader Bot"
         }
 
-        target = target_language.strip() if target_language else "English"
+        target = normalize_language_name(target_language)
 
         system_prompt = (
             "You are a precise translation assistant. Translate the user's message into the target language.\n"
@@ -154,28 +204,30 @@ async def translate_text(text: str, target_language: Optional[str]) -> Optional[
             "top_p": 0.9
         }
 
+        # Вызов OpenRouter Chat Completions / Call OpenRouter Chat Completions
         async with aiohttp.ClientSession() as session:
             async with session.post(OPENROUTE_URL, headers=headers, json=payload) as response:
                 if response.status == 200:
                     result = await response.json()
-                    translated = result["choices"][0]["message"]["content"].strip()
+                    translated = _strip_quotes(result["choices"][0]["message"]["content"]) 
                     logger.info("Successfully translated text")
                     return translated
                 else:
                     error_text = await response.text()
                     logger.error(f"OpenRoute API error (translate): {response.status} - {error_text}")
+                    # 404: эндпоинт недоступен для текущей модели / 404: no endpoints for current model
                     if response.status == 429:
                         try:
                             await asyncio.sleep(0.6)
                             async with session.post(OPENROUTE_URL, headers=headers, json=payload) as retry_resp:
                                 if retry_resp.status == 200:
                                     result_r = await retry_resp.json()
-                                    translated_r = result_r["choices"][0]["message"]["content"].strip()
+                                    translated_r = _strip_quotes(result_r["choices"][0]["message"]["content"]) 
                                     logger.info("Successfully translated after retry")
                                     return translated_r
                         except Exception as _:
                             pass
-                    # No fallback; surface error
+                    # Без фолбэка: вернуть None / No fallback; surface error
                     return None
     except Exception as e:
         logger.error(f"Error translating text: {e}")
@@ -183,8 +235,7 @@ async def translate_text(text: str, target_language: Optional[str]) -> Optional[
 
 def _preprocess_percentages(expr: str) -> str:
     """
-    Replace occurrences like 50% with (50/100).
-    Keeps other operators and parentheses intact.
+    Заменяет 50% на (50/100); сохраняет остальные операторы и скобки / Replace 50% with (50/100); keep others
     """
     import re
     def repl(m: re.Match) -> str:
@@ -194,7 +245,7 @@ def _preprocess_percentages(expr: str) -> str:
 
 def _safe_eval(expression: str) -> float:
     """
-    Safely evaluate a math expression supporting +, -, *, /, parentheses, and percentages.
+    Безопасная оценка выражения с поддержкой +, -, *, /, скобок и процентов / Safe eval
     """
     import ast
     import operator as op
@@ -229,8 +280,8 @@ def _safe_eval(expression: str) -> float:
 
 def parse_inline_translate_query(query: str) -> Optional[Tuple[str, Optional[str]]]:
     """
-    Parse inline query like: "text to German" or "/translate German text".
-    Returns tuple (text, language|None). None language means translate to English by default.
+    Разбор inline-запроса: "text to German" или "/translate German text" / Inline parse
+    Возвращает (текст, язык|None). None → перевод на английский / Returns (text, lang|None)
     """
     q = query.strip()
     if not q:
@@ -242,11 +293,20 @@ def parse_inline_translate_query(query: str) -> Optional[Tuple[str, Optional[str
         if len(parts) == 1:
             return None
         if len(parts) == 2:
-            # No language explicitly, treat rest as text, default to English
+            # If user provided only one token after command, detect if it's likely a language
+            token = parts[1].strip()
+            # Heuristic: short or known aliases -> treat as language without text (invalid)
+            if token.lower() in {"en","eng","english","ru","rus","russian","de","german","fr","french","es","spanish","it","italian","pt","portuguese"} or len(token) <= 3:
+                return None
+            # Otherwise assume it's text, default to English
             return (parts[1], None)
         # len == 3, assume parts[1] is language
-        return (parts[2], parts[1])
-    # Pattern: something ... to <language>
+        lang = parts[1].strip()
+        txt = parts[2].strip()
+        if not txt:
+            return None
+        return (txt, lang)
+    # Шаблон: ... to <language> / Pattern
     lower = lower_q
     # Support "text -> lang" pattern
     if "->" in q:
@@ -255,7 +315,7 @@ def parse_inline_translate_query(query: str) -> Optional[Tuple[str, Optional[str
         lang = q[idx+2:].strip()
         if text and lang:
             return (text, lang)
-    # Support "to: lang" and "to lang"
+    # Поддержка: "to: lang" и "to lang" / Support
     if " to:" in lower:
         idx = lower.rfind(" to:")
         text = q[:idx].strip()
@@ -269,7 +329,7 @@ def parse_inline_translate_query(query: str) -> Optional[Tuple[str, Optional[str
         lang = q[idx+len(sep):].strip()
         if text and lang:
             return (text, lang)
-    # Pattern: lang: text  (e.g., "english: Привет")
+    # Шаблон: lang: text (напр., "english: Привет") / Pattern
     if ":" in q:
         lang, maybe_text = q.split(":", 1)
         lang = lang.strip()
@@ -282,7 +342,7 @@ def parse_inline_translate_query(query: str) -> Optional[Tuple[str, Optional[str
 @dp.inline_query()
 async def inline_handler(inline_query: InlineQuery):
     """
-    Handle inline queries for text correction, translation, and calculator
+    Обработка inline-запросов: коррекция, перевод, калькулятор / Handle inline queries
     """
     query = inline_query.query.strip()
     
@@ -319,7 +379,7 @@ async def inline_handler(inline_query: InlineQuery):
         await inline_query.answer([suggestion_correct, suggestion_translate, suggestion_calc], cache_time=1, is_personal=True)
         return
     
-    # Inline calculator: /calc <expr> or calc <expr>
+    # Inline калькулятор: /calc <expr> или calc <expr> / Inline calculator
     ql = query.lstrip()
     lower = ql.lower()
     if lower.startswith("/calc") or lower.startswith("calc") or lower.startswith("calculate"):
@@ -352,7 +412,7 @@ async def inline_handler(inline_query: InlineQuery):
             await inline_query.answer([], cache_time=1)
             return
 
-    # Inline translate: aliases (trans, translate, bkb), patterns (text to <lang>, ->, to:)
+    # Inline перевод: алиасы (trans, translate, bkb), паттерны (text to <lang>, ->, to:) / Inline translate
     # If user typed only translate aliases without args, show only translate suggestion
     if lower.startswith("/translate") or lower.startswith("translate") or lower.startswith("trans") or lower.startswith("bkb"):
         tokens = ql.split(maxsplit=1)
@@ -372,9 +432,12 @@ async def inline_handler(inline_query: InlineQuery):
     parsed = parse_inline_translate_query(query)
     if parsed:
         text, lang = parsed
+        # Try translation on corrected text first; if translation fails, try raw text once
         corrected = await correct_text(text)
         source = corrected if corrected else text
         translated = await translate_text(source, lang)
+        if not translated and corrected:
+            translated = await translate_text(text, lang)
         if translated:
             result = InlineQueryResultArticle(
                 id="tr-1",
@@ -388,7 +451,7 @@ async def inline_handler(inline_query: InlineQuery):
         await inline_query.answer([], cache_time=1)
         return
 
-    # Default: Correct the text
+    # По умолчанию: исправление текста / Default: correct the text
     corrected_text = await correct_text(query)
     
     if corrected_text and corrected_text != query:
@@ -418,7 +481,7 @@ async def inline_handler(inline_query: InlineQuery):
 @dp.message(Command("start"))
 async def start_command(message: types.Message):
     """
-    Handle /start command
+    Обработка команды /start / Handle /start command
     """
     await message.answer(
         "👋 Hi there! I'm AI Proofreader Bot 🤖\n\n"
@@ -443,7 +506,7 @@ async def start_command(message: types.Message):
 @dp.message(Command("help"))
 async def help_command(message: types.Message):
     """
-    Handle /help command
+    Обработка команды /help / Handle /help command
     """
     await message.answer(
         "📖 Help\n\n"
@@ -461,7 +524,7 @@ async def help_command(message: types.Message):
 @dp.message(Command("translate"))
 async def translate_command(message: types.Message):
     """
-    Handle /translate <lang?> <text> in private chats and groups
+    Обработка /translate <lang?> <text> (личные и группы) / Handle /translate
     """
     text = message.text or ""
     parts = text.split(maxsplit=2)
@@ -476,9 +539,12 @@ async def translate_command(message: types.Message):
         lang = parts[1]
         src_text = parts[2]
 
+    # Try translation on corrected text first; if translation fails, try raw text once
     corrected = await correct_text(src_text)
     source = corrected if corrected else src_text
     translated = await translate_text(source, lang)
+    if not translated and corrected:
+        translated = await translate_text(src_text, lang)
     if translated:
         await message.answer(translated)
     else:
@@ -488,7 +554,7 @@ async def translate_command(message: types.Message):
 @dp.message(Command("calc"))
 async def calc_command(message: types.Message):
     """
-    Handle /calc <expression> with non-AI calculator. Reply only numeric result.
+    Обработка /calc <expression> (локальный калькулятор); отвечает числом / Handle /calc
     """
     text = message.text or ""
     expr = text[5:].strip()
@@ -505,10 +571,10 @@ async def calc_command(message: types.Message):
 
 async def main():
     """
-    Main function to start the bot
+    Точка входа: запуск бота / Main function to start the bot
     """
     try:
-        # Check if required environment variables are set
+        # Проверка обязательных переменных окружения / Check required environment variables
         if not os.getenv("BOT_TOKEN"):
             logger.error("BOT_TOKEN not found in environment variables")
             return
@@ -519,13 +585,13 @@ async def main():
         
         logger.info("Starting AI Proofreader Bot...")
         
-        # Ensure webhook is removed to avoid conflicts when using polling
+        # Удаление вебхука для избежания конфликтов с polling / Ensure webhook is removed before polling
         try:
             await bot.delete_webhook(drop_pending_updates=True)
         except Exception:
             pass
 
-        # Start polling
+        # Запуск polling / Start polling
         await dp.start_polling(bot)
     
     except Exception as e:
