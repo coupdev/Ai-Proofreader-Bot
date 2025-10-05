@@ -41,7 +41,7 @@ A Telegram bot that corrects text, translates, and calculates. Works in private 
 
 * **Python 3.10+**
 * Aiogram 3 — Telegram bot framework
-* OpenRouter — Grok 4 Fast (Free)
+* OpenRouter — DeepSeek V3.1 (free)
 * aiohttp — HTTP client for API requests
 * python-dotenv — Environment management
 
